@@ -54,24 +54,27 @@ function Get-SvnBranch {
 }
 
 function tsvn {
-  if($args[0] -eq "help") {
-    #I don't like the built in help behaviour!
-    $tsvnCommands.keys | sort | % { write-host $_ }
-        
-    return    
-  }
+  if($args) {
+    if($args[0] -eq "help") {
+      #I don't like the built in help behaviour!
+      $tsvnCommands.keys | sort | % { write-host $_ }
+          
+      return    
+    }
 
-  $newArgs = @()
-  $newArgs += "/command:" + $args[0]
-  
-  $cmd = $tsvnCommands[$args[0]]
-  if($cmd -and $cmd.useCurrentDirectory) {
-     $newArgs += "/path:."
-  }
-  
-  if($args.length -gt 1) {
-    $args[1..$args.length] | % { $newArgs += $_ }
-  }
+    $newArgs = @()
+    $newArgs += "/command:" + $args[0]
     
-  tortoiseproc $newArgs
+    $cmd = $tsvnCommands[$args[0]]
+    if($cmd -and $cmd.useCurrentDirectory) {
+       $newArgs += "/path:."
+    }
+    
+    if($args.length -gt 1) {
+      $args[1..$args.length] | % { $newArgs += $_ }
+    }
+      
+    tortoiseproc $newArgs
+  }
 }
+

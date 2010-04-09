@@ -41,7 +41,7 @@ function tortoiseSvnCommands($filter) {
 
 $tsvnCommands = @{ 
 "about" = @{ cmd = "about"; useCurrentDirectory = $false };
-"log" = @{ cmd = "log"; useCurrentDirectory = $false };
+"log" = @{ cmd = "log"; useCurrentDirectory = $true };
 "checkout" = @{ cmd = "checkout"; useCurrentDirectory = $false };
 "import" = @{ cmd = "import"; useCurrentDirectory = $false };
 "update" = @{ cmd = "update"; useCurrentDirectory = $true };
@@ -51,7 +51,7 @@ $tsvnCommands = @{
 "cleanup" = @{ cmd = "cleanup"; useCurrentDirectory = $false };
 "resolve" = @{ cmd = "resolve"; useCurrentDirectory = $false };
 "repocreate" = @{ cmd = "repocreate"; useCurrentDirectory = $false };
-"switch" = @{ cmd = "switch"; useCurrentDirectory = $false };
+"switch" = @{ cmd = "switch"; useCurrentDirectory = $true };
 "export" = @{ cmd = "export"; useCurrentDirectory = $false };
 "merge" = @{ cmd = "merge"; useCurrentDirectory = $false };
 "mergeall" = @{ cmd = "mergeall"; useCurrentDirectory = $false };
