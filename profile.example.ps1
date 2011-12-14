@@ -12,7 +12,7 @@ Import-Module .\posh-svn
 function prompt {
     Write-Host($pwd) -nonewline
         
-    # Mercurial Prompt
+    # Svn Prompt
     $Global:SvnStatus = Get-SvnStatus
     Write-SvnStatus $SvnStatus
       
@@ -23,7 +23,7 @@ if(-not (Test-Path Function:\DefaultTabExpansion)) {
     Rename-Item Function:\TabExpansion DefaultTabExpansion
 }
 
-# Set up tab expansion and include hg expansion
+# Set up tab expansion and include svn expansion
 function TabExpansion($line, $lastWord) {
     $lastBlock = [regex]::Split($line, '[|;]')[-1]
     
