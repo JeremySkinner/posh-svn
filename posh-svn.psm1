@@ -4,9 +4,14 @@ Push-Location $psScriptRoot
 . ./SvnTabExpansion.ps1
 Pop-Location
 
+New-Alias -Name "ap" -Value "Get-ActualPath"
+
 Export-ModuleMember -Function @(
   'Write-SvnStatus',
   'Get-SvnStatus',
+  'Get-ActualPath',
   'SvnTabExpansion',
   'tsvn'
+) -Alias @(
+  'ap'
 )
