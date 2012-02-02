@@ -19,31 +19,11 @@ function Get-ActualPath($path)
     {
         $path = $Pwd
     }
-    #We need the correct case for a path so that svn recognises it as a node.
-    if (Test-Path $path)
-    {
-        Push-Location
-        Set-Location $path
-        $path = Get-Location
-        Set-Location -Path ..
-        
-        $pathStr = [System.IO.Path]::GetFullPath($path)
-        foreach ($subdir in Get-ChildItem)
-        {
-            Push-Location
-            Set-Location $subdir
-            $subdir = Get-Location
-            $subStr = [System.IO.Path]::GetFullPath($subdir)
-            Pop-Location
-            if ($subStr -eq $pathStr)
-            {
-               $path = $subdir
-               break
-            }
-        }
-        Pop-Location
-    }
-    return $path
+    $newPath = (Resolve-Path $path).Path
+    $root = [System.IO.Path]::GetPathRoot( $newPath )
+    if ( $newPath -ne $root ) # Handle root directory
+        { $newPath = [System.IO.Directory]::GetDirectories( $root, $newPath.Substring( $root.Length ) )[ 0 ] }
+    $newPath
 }
 
 function Get-SvnStatus {
@@ -111,7 +91,8 @@ function Get-SvnBranch {
           }
         }
     }
-    return $repository
+    return @{"Repository" = $repository;
+              "Revision" = $xinfo.info.entry.revision}
   }
 }
 

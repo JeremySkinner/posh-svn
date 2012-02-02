@@ -29,7 +29,7 @@ function TabExpansion($line, $lastWord) {
     $lastBlock = [regex]::Split($line, '[|;]')[-1]
     
     switch -regex ($lastBlock) {
-        # svn and tortoisesvn tab expansion
+        # subversion and tortoisesvn tab expansion
         '(svn|tsvn) (.*)' { SvnTabExpansion($lastBlock) }
         # Fall back on existing tab expansion
         default { & $teBackup $line $lastWord }
