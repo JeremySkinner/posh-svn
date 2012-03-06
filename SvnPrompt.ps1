@@ -48,7 +48,7 @@ function Write-SvnStatus($status) {
 }
 
 # Should match https://github.com/dahlbyk/posh-git/blob/master/GitPrompt.ps1
-if (!$Global:VscPromptStatuses) { #Global:VcsPromptStatuses = @() }
+if (!$Global:VcsPromptStatuses) { $Global:VcsPromptStatuses = @() }
 function Global:WriteVcsStatus { $Global:VcsPromptStatuses | foreach { & $_ } }
 
 # Scriptblock that will execute for write-vcsstatus
