@@ -46,3 +46,14 @@ function Write-SvnStatus($status) {
         Write-Host $s.AfterText -NoNewline -BackgroundColor $s.AfterBackgroundColor -ForegroundColor $s.AfterForegroundColor
     }
 }
+
+# Should match https://github.com/dahlbyk/posh-git/blob/master/GitPrompt.ps1
+if (!$Global:VcsPromptStatuses) { $Global:VcsPromptStatuses = @() }
+function Global:Write-VcsStatus { $Global:VcsPromptStatuses | foreach { & $_ } }
+
+# Add scriptblock that will execute for Write-VcsStatus
+$Global:VcsPromptStatuses += {
+    $Global:SvnStatus = Get-SvnStatus
+    Write-SvnStatus $SvnStatus
+}
+
