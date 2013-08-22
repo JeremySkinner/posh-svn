@@ -1,9 +1,34 @@
-function isSvnDirectory() {
-  return (test-path ".svn")
+function Get-SvnInfo {
+  try
+  {
+      $xinfo = [xml](svn info Get-ActualPath($Pwd) --xml)
+      if ($xinfo.info.entry.url)
+      {
+        return $xinfo
+      }
+   }
+   catch
+   {
+      return
+   }
+}
+
+function Get-ActualPath($path)
+{
+    if (!$path)
+    {
+        $path = $Pwd
+    }
+    $newPath = (Resolve-Path $path).Path
+    $root = [System.IO.Path]::GetPathRoot( $newPath )
+    if ( $newPath -ne $root ) # Handle root directory
+        { $newPath = [System.IO.Directory]::GetDirectories( $root, $newPath.Substring( $root.Length ) )[ 0 ] }
+    $newPath
 }
 
 function Get-SvnStatus {
-  if(IsSvnDirectory) {
+  if(Get-SvnInfo)
+  {
     $untracked = 0
     $added = 0
     $modified = 0
@@ -36,20 +61,38 @@ function Get-SvnStatus {
 }
 
 function Get-SvnBranch {
-  if(IsSvnDirectory) {
-    $info = svn info
-    $url = $info[1].Replace("URL: ", "") #URL: svn://server/repo/trunk/test
-    $root = $info[2].Replace("Repository Root: ", "") #Repository Root: svn://server/repo
+  $xinfo = Get-SvnInfo
+  if($xinfo)
+  {
+    $url = $xinfo.info.entry.url #URL: svn://server/repo/trunk/test
+    $root = $xinfo.info.entry.repository.root #Repository Root: svn://server/repo
     
+    #Get the repository name
+    $repositoryBits = $root.Split("/", [StringSplitOptions]::RemoveEmptyEntries)
+    $repository = $repositoryBits[-1]
+    
+    #Try to get the branch name
     $path = $url.Replace($root, "")
     $pathBits = $path.Split("/", [StringSplitOptions]::RemoveEmptyEntries)
     
-    if($pathBits[0] -eq "trunk") {
-      return "trunk";
+    foreach ($bit in $pathBits)
+    {
+        if($bit -match "trunk") {
+          return $repository + ":trunk"
+        }
+        if($bit -match "branches|tags") {
+          if ($ForEach.MoveNext())
+          {
+             return $repository + ":" + $ForEach.Current
+          }
+          else
+          {
+             break
+          }
+        }
     }
-    if($pathBits[0] -match "branches|tags") {
-      return $pathBits[1]
-    }
+    return @{"Repository" = $repository;
+              "Revision" = $xinfo.info.entry.revision}
   }
 }
 
