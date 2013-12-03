@@ -38,11 +38,9 @@ function Get-SvnStatus {
 function Get-SvnBranch {
   if(IsSvnDirectory) {
     $info = svn info
-    $url = $info[1].Replace("URL: ", "") #URL: svn://server/repo/trunk/test
-    $root = $info[2].Replace("Repository Root: ", "") #Repository Root: svn://server/repo
-    
-    $path = $url.Replace($root, "")
-    $pathBits = $path.Split("/", [StringSplitOptions]::RemoveEmptyEntries)
+    $relative_url = ($info | Select-String -Pattern "Relative URL: \^/(.*)").Matches.Groups[1].Value
+
+    $pathBits = $relative_url.Split("/", [StringSplitOptions]::RemoveEmptyEntries)
     
     if($pathBits[0] -eq "trunk") {
       return "trunk";
