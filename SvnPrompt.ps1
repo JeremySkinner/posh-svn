@@ -52,7 +52,9 @@ if (!$Global:VcsPromptStatuses) { $Global:VcsPromptStatuses = @() }
 function Global:WriteVcsStatus { $Global:VcsPromptStatuses | foreach { & $_ } }
 
 # Scriptblock that will execute for write-vcsstatus
-$Global:VcsPromptStatuses += {
+$PoshSvnVcsPrompt = {
 	$Global:SvnStatus = Get-SvnStatus
 	Write-SvnStatus $SvnStatus
 }
+$Global:VcsPromptStatuses += $PoshSvnVcsPrompt
+$ExecutionContext.SessionState.Module.OnRemove = { $Global:VcsPromptStatuses = $Global:VcsPromptStatuses | ? { $_ -ne $PoshSvnVcsPrompt } }
