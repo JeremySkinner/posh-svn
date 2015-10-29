@@ -1,14 +1,21 @@
 function isSvnDirectory() {
     $info = Get-SvnInfo
-    if($info -isnot [system.array])
+    if($info -is [system.array])
     {
-        return !($info.StartsWith("svn: E155007"))
+        return $true
     }
-    return $true
+    return $false
 }
 
 function Get-SvnInfo {
-    return svn info
+    Try {
+        $info = svn info 2> $null
+        return $info
+    }
+    Catch
+    {
+        return $_.Exception.Message
+    }
 }
 
 function Get-SvnStatus {
