@@ -1,5 +1,14 @@
 function isSvnDirectory() {
-  return (test-path ".svn")
+    $info = Get-SvnInfo
+    if($info -isnot [system.array])
+    {
+        return !($info.StartsWith("svn: E155007"))
+    }
+    return $true
+}
+
+function Get-SvnInfo {
+    return svn info
 }
 
 function Get-SvnStatus {
@@ -10,7 +19,7 @@ function Get-SvnStatus {
     $deleted = 0
     $missing = 0
     $conflicted = 0
-    $branch = Get-SvnBranch
+    $branchInfo = Get-SvnBranchInfo
     
     svn status | foreach {
       $char = $_[0]
@@ -31,25 +40,27 @@ function Get-SvnStatus {
                "Deleted" = $deleted;
                "Missing" = $missing;
                "Conflicted" = $conflicted;
-               "Branch" = $branch}
+               "Branch" = $branchInfo.Branch;
+               "Revision" = $branchInfo.Revision;}
    }
 }
 
-function Get-SvnBranch {
+function Get-SvnBranchInfo {
   if(IsSvnDirectory) {
     $info = svn info
-    $url = $info[1].Replace("URL: ", "") #URL: svn://server/repo/trunk/test
-    $root = $info[2].Replace("Repository Root: ", "") #Repository Root: svn://server/repo
+    $url = $info[3].Replace("Relative URL: ^/", "") #Relative URL: ^/trunk/test
+    $revision = $info[6].Replace("Revision: ", "") #Revision: 1234
     
-    $path = $url.Replace($root, "")
-    $pathBits = $path.Split("/", [StringSplitOptions]::RemoveEmptyEntries)
+    $pathBits = $url.Split("/", [StringSplitOptions]::RemoveEmptyEntries)
     
     if($pathBits[0] -eq "trunk") {
-      return "trunk";
+      $branch =  "trunk";
     }
-    if($pathBits[0] -match "branches|tags") {
-      return $pathBits[1]
+    elseif($pathBits[0] -match "branches|tags") {
+      $branch = $pathBits[1]
     }
+    return @{"Branch" = $branch;
+             "Revision" = $revision}
   }
 }
 

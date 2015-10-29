@@ -7,8 +7,11 @@ $global:SvnPromptSettings = New-Object PSObject -Property @{
     AfterForegroundColor      = [ConsoleColor]::Yellow
     AfterBackgroundColor      = $Host.UI.RawUI.BackgroundColor
     
-    BranchForegroundColor    = [ConsoleColor]::Cyan
-    BranchBackgroundColor    = $Host.UI.RawUI.BackgroundColor
+    BranchForegroundColor     = [ConsoleColor]::Cyan
+    BranchBackgroundColor     = $Host.UI.RawUI.BackgroundColor
+    
+    RevisionForegroundColor   = [ConsoleColor]::DarkGray
+    RevisionBackgroundColor   = $Host.UI.RawUI.BackgroundColor
     
     WorkingForegroundColor    = [ConsoleColor]::Yellow
     WorkingBackgroundColor    = $Host.UI.RawUI.BackgroundColor
@@ -20,6 +23,7 @@ function Write-SvnStatus($status) {
        
         Write-Host $s.BeforeText -NoNewline -BackgroundColor $s.BeforeBackgroundColor -ForegroundColor $s.BeforeForegroundColor
         Write-Host $status.Branch -NoNewline -BackgroundColor $s.BranchBackgroundColor -ForegroundColor $s.BranchForegroundColor
+        Write-Host "@$($status.Revision)" -NoNewline -BackgroundColor $s.RevisionBackgroundColor -ForegroundColor $s.RevisionForegroundColor
         
         if($status.Added) {
           Write-Host " +$($status.Added)" -NoNewline -BackgroundColor $s.WorkingBackgroundColor -ForegroundColor $s.WorkingForegroundColor
@@ -48,11 +52,16 @@ function Write-SvnStatus($status) {
 }
 
 # Should match https://github.com/dahlbyk/posh-git/blob/master/GitPrompt.ps1
-if (!$Global:VcsPromptStatuses) { $Global:VcsPromptStatuses = @() }
+if(!(Test-Path Variable:Global:VcsPromptStatuses)) {
+    $Global:VcsPromptStatuses = @()
+}
+
 function Global:WriteVcsStatus { $Global:VcsPromptStatuses | foreach { & $_ } }
 
 # Scriptblock that will execute for write-vcsstatus
-$Global:VcsPromptStatuses += {
+$PoshSvnVcsPrompt = {
 	$Global:SvnStatus = Get-SvnStatus
 	Write-SvnStatus $SvnStatus
 }
+$Global:VcsPromptStatuses += $PoshSvnVcsPrompt
+$ExecutionContext.SessionState.Module.OnRemove = { $Global:VcsPromptStatuses = $Global:VcsPromptStatuses | ? { $_ -ne $PoshSvnVcsPrompt} }
