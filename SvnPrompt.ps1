@@ -7,6 +7,9 @@ $global:SvnPromptSettings = New-Object PSObject -Property @{
     AfterForegroundColor      = [ConsoleColor]::Yellow
     AfterBackgroundColor      = $Host.UI.RawUI.BackgroundColor
     
+    ErrorForegroundColor      = [ConsoleColor]::Red
+    ErrorBackgroundColor      = $Host.UI.RawUI.BackgroundColor
+    
     BranchForegroundColor    = [ConsoleColor]::Cyan
     BranchBackgroundColor    = $Host.UI.RawUI.BackgroundColor
     
@@ -49,7 +52,28 @@ function Write-SvnStatus($status) {
 
 # Should match https://github.com/dahlbyk/posh-git/blob/master/GitPrompt.ps1
 if (!$Global:VcsPromptStatuses) { $Global:VcsPromptStatuses = @() }
-function Global:WriteVcsStatus { $Global:VcsPromptStatuses | foreach { & $_ } }
+
+function Global:Write-VcsStatus {
+    $Global:VcsPromptStatuses | foreach {
+        $vcsPromptErrors = $null
+        try {
+            Invoke-Command -ScriptBlock $_ -ErrorVariable vcsPromptErrors 2>$null
+        }
+        catch {
+            $vcsPromptErrors = $_
+        }
+        if ($vcsPromptErrors.Length -gt 0) {
+             # Log the errors but dont affect the users prompt, splat error objects into Write-Error
+            $vcsPromptErrors | % { Write-Error -ErrorAction SilentlyContinue @_ }
+            $s = $Global:SvnPromptSettings
+            if ($s) {
+                Write-Prompt $s.BeforeText -BackgroundColor $s.BeforeBackgroundColor -ForegroundColor $s.BeforeForegroundColor
+                Write-Prompt "Error" -BackgroundColor $s.ErrorBackgroundColor -ForegroundColor $s.ErrorForegroundColor
+                Write-Prompt $s.AfterText -BackgroundColor $s.AfterBackgroundColor -ForegroundColor $s.AfterForegroundColor
+            }
+        }
+    }
+}
 
 # Scriptblock that will execute for write-vcsstatus
 $Global:VcsPromptStatuses += {
