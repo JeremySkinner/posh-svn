@@ -48,11 +48,13 @@ function Write-SvnStatus($status) {
 }
 
 # Should match https://github.com/dahlbyk/posh-git/blob/master/GitPrompt.ps1
-if (!$Global:VcsPromptStatuses) { $Global:VcsPromptStatuses = @() }
-function Global:WriteVcsStatus { $Global:VcsPromptStatuses | foreach { & $_ } }
+if((Get-Variable -Scope Global -Name VcsPromptStatuses -ErrorAction SilentlyContinue) -eq $null) {
+    $Global:VcsPromptStatuses = @()
+}
+function Global:Write-VcsStatus { $Global:VcsPromptStatuses | foreach { & $_ } }
 
-# Scriptblock that will execute for write-vcsstatus
+# Add scriptblock that will execute for Write-VcsStatus
 $Global:VcsPromptStatuses += {
-	$Global:SvnStatus = Get-SvnStatus
-	Write-SvnStatus $SvnStatus
+    $Global:SvnStatus = Get-SvnStatus
+    Write-SvnStatus $SvnStatus
 }

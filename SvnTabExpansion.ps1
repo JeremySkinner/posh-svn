@@ -76,3 +76,20 @@ $tsvnCommands = @{
 "rebuildiconcache" = @{ cmd = "rebuildiconcache"; useCurrentDirectory = $false };
 "properties" = @{ cmd = "properties"; useCurrentDirectory = $false };
 }
+
+if (Test-Path Function:\TabExpansion) {
+    Rename-Item Function:\TabExpansion TabExpansionBackup
+}
+
+function TabExpansion($line, $lastWord) {
+    $lastBlock = [regex]::Split($line, '[|;]')[-1].TrimStart()
+
+    switch -regex ($lastBlock) {
+        # Execute git tab completion for all svn-related commands
+        "^$(Get-AliasPattern svn) (.*)" { SvnTabExpansion $lastBlock }
+        "^$(Get-AliasPattern tsvn) (.*)" { SvnTabExpansion $lastBlock }
+
+        # Fall back on existing tab expansion
+        default { if (Test-Path Function:\TabExpansionBackup) { TabExpansionBackup $line $lastWord } }
+    }
+}

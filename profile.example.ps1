@@ -10,30 +10,14 @@ Import-Module .\posh-svn
 
 # Set up a simple prompt, adding the svn prompt parts inside svn repos
 function prompt {
+    $realLASTEXITCODE = $LASTEXITCODE
+
     Write-Host($pwd) -nonewline
-        
-    # Svn Prompt
-    $Global:SvnStatus = Get-SvnStatus
-    Write-SvnStatus $SvnStatus
-      
+
+    Write-VcsStatus
+
+    $global:LASTEXITCODE = $realLASTEXITCODE
     return "> "
 }
-
-if(-not (Test-Path Function:\DefaultTabExpansion)) {
-    Rename-Item Function:\TabExpansion DefaultTabExpansion
-}
-
-# Set up tab expansion and include svn expansion
-function TabExpansion($line, $lastWord) {
-    $lastBlock = [regex]::Split($line, '[|;]')[-1]
-    
-    switch -regex ($lastBlock) {
-        # svn tab expansion
-		'(svn) (.*)' { SvnTabExpansion($lastBlock) }
-        # Fall back on existing tab expansion
-        default { DefaultTabExpansion $line $lastWord }
-    }
-}
-
 
 Pop-Location

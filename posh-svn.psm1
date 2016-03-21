@@ -7,6 +7,7 @@ Pop-Location
 Export-ModuleMember -Function @(
   'Write-SvnStatus',
   'Get-SvnStatus',
+  'TabExpansion',
   'SvnTabExpansion',
   'tsvn'
 )
