@@ -1,5 +1,6 @@
 function isSvnDirectory() {
-  return (test-path ".svn")
+  svn info
+  return $?
 }
 
 function Get-SvnStatus {
